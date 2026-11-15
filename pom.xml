@@ -11,8 +11,8 @@
 	<groupId>com.carlosguzman</groupId>
 	<artifactId>customers</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>customers</name>
+	<description>Kata: API de clientes con Spring Boot: build y ejecución por ambiente (dev/prod)</description>
 	<url/>
 	<licenses>
 		<license/>
