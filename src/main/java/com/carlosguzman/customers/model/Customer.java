@@ -12,7 +12,7 @@ public final class Customer {
     /**
      * Constructor de la entidad.
      * @param id El identificador único del cliente.
-     * @param name El nombre del cliente.
+     * @param name  El nombre del cliente.
      * @param email El email del cliente.
      */
     public Customer(Long id, String name, String email) {

@@ -4,7 +4,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 /**
- * DTO que transporta los datos de un nuevo cliente. Representa el JSON que envía el usuario al crear un nuevo cliente.
+ * DTO que transporta los datos de un nuevo cliente. Representa el JSON que
+ * envía el usuario al crear un nuevo cliente.
  */
 public class CustomerRequest {
 
