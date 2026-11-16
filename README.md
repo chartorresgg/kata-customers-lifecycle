@@ -242,3 +242,26 @@ java -jar target/app.jar --spring.profiles.active=prod --server.port=9999
 - **PROD simulado:** El ambiente de producción es una simulación en memoria y, por tanto, omite infraestructura productiva real: no persiste datos en una base de datos, no utiliza despliegue en la nube ni cifrado mediante HTTPS, y prescinde de credenciales reales (las cuales, en un entorno productivo real, se inyectarían mediante variables de entorno o un gestor de secretos).
 
 ## Ciclo de vida
+
+```mermaid
+flowchart TD
+    A["Código fuente y configuración<br/>repositorio Git"] --> B["mvn clean package"]
+    B --> C["Compila el código"]
+    C --> D{"¿Pasan las pruebas?"}
+    D -->|No| E["BUILD FAILURE<br/>no se genera el JAR"]
+    D -->|Sí| F["target/app.jar<br/>un único JAR ejecutable"]
+    F -->|"perfil dev, o sin perfil"| G["DEV<br/>customers-dev<br/>puerto 8080<br/>log DEBUG"]
+    F -->|"perfil prod"| H["PROD<br/>customers-prod<br/>puerto 9090<br/>log INFO"]
+```
+
+El diagrama muestra el recorrido de la aplicación, desde el código hasta su ejecución en un ambiente:
+
+1. **Código:** el código fuente y los tres archivos de configuración (`application.properties`, `application-dev.properties` y `application-prod.properties`) están en el repositorio.
+2. **Construcción:** `mvn clean package` borra el resultado anterior, compila el código y ejecuta las pruebas.
+3. **Pruebas:** si alguna prueba falla, el proceso se detiene y no se genera el JAR. Así, nunca se ejecuta una versión que no pasó las pruebas.
+4. **Empaquetado:** si las pruebas pasan, se genera `target/app.jar`, un único JAR ejecutable que incluye las dependencias y las tres configuraciones.
+5. **Ejecución:** el mismo JAR se ejecuta en DEV o en PROD. El ambiente se elige al arrancar, con el perfil, y cada uno carga su puerto, su nombre y su nivel de log.
+
+La idea principal es que el JAR se construye una sola vez y se ejecuta en varios ambientes. El JAR que se prueba en DEV es el mismo que se ejecuta en PROD: solo cambia la configuración.
+
+En esta kata los pasos se ejecutan a mano. En un entorno real los automatizaría una herramienta de integración y despliegue continuo (CI/CD): cada cambio en el repositorio dispararía la construcción y las pruebas, y el JAR resultante se desplegaría en cada ambiente.
