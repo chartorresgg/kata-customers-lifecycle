@@ -16,6 +16,7 @@ Al iniciar la aplicación, se elige el ambiente con el que se quiere trabajar y 
 | Java (JDK) | 21 | Obligatorio |
 | Maven | 3.9+ | Opcional: el proyecto incluye el wrapper (`mvnw` / `mvnw.cmd`) |
 | Git | Cualquiera reciente | Para clonar el repositorio |
+| Docker | Cualquiera reciente | Opcional: solo para ejecutar la aplicación en contenedores |
 
 Tecnologías usadas: Spring Boot 4.1.2 (Spring Web MVC y Validation). Maven las descarga al construir; no hay que instalarlas.
 
@@ -92,6 +93,49 @@ SPRING_PROFILES_ACTIVE=prod java -jar target/app.jar
 DEV y PROD se pueden ejecutar al mismo tiempo, cada uno en su terminal, porque usan puertos distintos. Cada instancia guarda sus propios clientes en memoria.
 
 Para detener la aplicación: `Ctrl + C`.
+
+## ¿Cómo ejecutar con Docker? (opcional)
+
+Con Docker no hace falta tener Java ni Maven instalados: la imagen trae todo lo necesario para construir y ejecutar la aplicación.
+
+### Construir la imagen
+
+Desde la raíz del proyecto (el punto final hace parte del comando):
+
+```bash
+docker build -t kata-customers .
+```
+
+El `Dockerfile` tiene dos etapas:
+
+1. **Construir:** parte de una imagen con Maven y el JDK 21, copia el código y ejecuta `mvn clean package`. Las pruebas también se ejecutan aquí: si alguna falla, no se genera la imagen.
+2. **Ejecutar:** parte de una imagen que solo tiene el JRE 21 y recibe únicamente el `app.jar` de la primera etapa.
+
+La imagen final no incluye Maven, el JDK ni el código fuente: solo lo necesario para ejecutar.
+
+### Ejecutar en DEV
+
+```bash
+docker run --rm -p 8080:8080 kata-customers
+```
+
+### Ejecutar en PROD
+
+```bash
+docker run --rm -p 9090:9090 -e SPRING_PROFILES_ACTIVE=prod kata-customers
+```
+
+Qué significa cada opción:
+
+| Opción | Qué hace |
+|---|---|
+| `-p 8080:8080` | Conecta un puerto de la máquina (izquierda) con el puerto del contenedor (derecha) |
+| `-e SPRING_PROFILES_ACTIVE=prod` | Indica el perfil con una variable de entorno. Sin ella, arranca en DEV |
+| `--rm` | Borra el contenedor al detenerlo |
+
+La imagen es la misma para los dos ambientes: solo cambian la variable de entorno y el puerto. Los dos contenedores se pueden ejecutar al mismo tiempo, y cada uno guarda sus propios clientes en memoria.
+
+El mensaje de arranque y los endpoints son los mismos que al ejecutar con `java -jar`. Para detener un contenedor: `Ctrl + C`.
 
 ## Endpoints
 
@@ -229,6 +273,10 @@ java -jar target/app.jar --spring.profiles.active=prod --server.port=9999
 
   No se usa Mockito ya que no hay dependencias externas, como una base de datos u otra API. Es decir, no hay nada que aislar.
 
+- **Docker:** El `Dockerfile` usa dos etapas para que la imagen final sea más pequeña y solo tenga lo necesario para ejecutar la aplicación.
+
+  El perfil no queda escrito dentro de la imagen: se indica al arrancar el contenedor, con una variable de entorno. Así, una sola imagen sirve para DEV y para PROD, igual que un solo JAR.
+
 ### Limitaciones
 
 - **Memoria volátil:** De acuerdo al diseño de la aplicación y el requerimiento de usar un ambiente de producción simulado, la memoria volátil implica que no se guarden los datos de los clientes que se hayan creado al reiniciar la aplicación. Cada instancia, al ser un proceso con su propia memoria, gestiona sus datos por separado.
@@ -239,7 +287,7 @@ java -jar target/app.jar --spring.profiles.active=prod --server.port=9999
 
 - **Cobertura de pruebas:** Aún no se han desarrollado las pruebas de integración de la API: no están probados los endpoints de `/api/customers` ni la regla del email duplicado.
 
-- **PROD simulado:** El ambiente de producción es una simulación en memoria y, por tanto, omite infraestructura productiva real: no persiste datos en una base de datos, no utiliza despliegue en la nube ni cifrado mediante HTTPS, y prescinde de credenciales reales (las cuales, en un entorno productivo real, se inyectarían mediante variables de entorno o un gestor de secretos).
+- **PROD simulado:** El ambiente de producción es una simulación en memoria y, por tanto, omite infraestructura productiva real: no persiste datos en una base de datos, no utiliza despliegue en la nube ni cifrado mediante HTTPS, y prescinde de credenciales reales (las cuales, en un entorno productivo real, se inyectarían mediante variables de entorno o un gestor de secretos). La imagen de Docker queda lista para desplegarse, pero en esta kata solo se ejecuta en la máquina local.
 
 ## Ciclo de vida
 
@@ -264,4 +312,4 @@ El diagrama muestra el recorrido de la aplicación, desde el código hasta su ej
 
 La idea principal es que el JAR se construye una sola vez y se ejecuta en varios ambientes. El JAR que se prueba en DEV es el mismo que se ejecuta en PROD: solo cambia la configuración.
 
-En esta kata los pasos se ejecutan a mano. En un entorno real los automatizaría una herramienta de integración y despliegue continuo (CI/CD): cada cambio en el repositorio dispararía la construcción y las pruebas, y el JAR resultante se desplegaría en cada ambiente.
+En esta kata los pasos se ejecutan a mano. En un entorno real los automatizaría una herramienta de integración y despliegue continuo (CI/CD): cada cambio en el repositorio dispararía la construcción y las pruebas, y el JAR resultante se desplegaría en cada ambiente. Con Docker, lo que se despliega es la imagen, que ya contiene el JAR y el Java que necesita.
