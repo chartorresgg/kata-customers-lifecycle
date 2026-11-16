@@ -29,7 +29,6 @@ public class CustomerRepository {
      * @return El objeto {@link Customer} recién creado y almacenado.
      */
     public Customer save(String name, String email) {
-
         long id = sequence.incrementAndGet();
 
         Customer customer = new Customer(id, name, email);
@@ -55,11 +54,11 @@ public class CustomerRepository {
      * sin distinguir entre mayúsculas y minúsculas.
      * 
      * @param email Correo a validar.
-     * @return {@code true} si existe un cliente con ese correo; {@code false} en caso contrario.
+     * @return {@code true} si existe un cliente con ese correo; {@code false} en
+     *         caso contrario.
      */
     public boolean existsByEmail(String email) {
         return customers.values().stream()
                 .anyMatch(customer -> customer.getEmail().equalsIgnoreCase(email));
     }
-
 }
