@@ -1,6 +1,7 @@
 package com.carlosguzman.customers.service;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,17 +35,19 @@ public class CustomerService {
      * Registra un nuevo cliente verificando previamente que su correo electrónico
      * no exista.
      *
-     * @param request datos de entrada del cliente a registrar (nombre y correo).
+     * @param request DTO de datos de entrada del cliente a registrar (nombre y correo).
      * @return el cliente guardado en memoria con su ID asignado.
      * @throws DuplicateEmailException si ya existe un cliente registrado con el
      *                                 mismo correo.
      */
-    public Customer create(CustomerRequest request) {
-        if (customerRepository.existsByEmail(request.getEmail())) {
+    public synchronized Customer create(CustomerRequest request) {
+        String normalizedEmail = request.getEmail().trim().toLowerCase(Locale.ROOT);
+
+        if (customerRepository.existsByEmail(normalizedEmail)) {
             throw new DuplicateEmailException();
         }
 
-        Customer customer = customerRepository.save(request.getName(), request.getEmail());
+        Customer customer = customerRepository.save(request.getName(), normalizedEmail);
 
         log.info("Cliente creado con id={}", customer.getId());
         return customer;
@@ -57,6 +60,7 @@ public class CustomerService {
      * @return Listado de clientes existentes ordenados por ID.
      */
     public List<Customer> findAll() {
+        log.debug("Consultando todos los clientes registrados");
         return customerRepository.findAll();
     }
 
