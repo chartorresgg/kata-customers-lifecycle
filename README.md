@@ -2,7 +2,12 @@
 
 ## Descripción
 
-Esta es una aplicación que le permite al usuario crear nuevos clientes y poder consultarlos. Además, demuestra la importancia de interactuar con un ambiente de desarrollo para la configuración de nuevas funcionalidades y un ambiente de producción, en la que el usuario final podrá crear los nuevos clientes y consultarlos.
+Esta es una aplicación que permite crear y consultar clientes. Fue desarrollada con Java 21, Spring Boot y Maven.
+
+Su objetivo principal es construir un único archivo JAR que se ejecuta en dos ambientes: Desarrollo (DEV) y Producción (PROD), y cada ambiente tiene sus propias configuraciones. El ambiente de producción es un entorno simulado. El JAR se construye una vez, sin recompilar ni modificar el código entre ambientes.
+
+Al iniciar la aplicación, se elige el ambiente con el que se quiere trabajar y se muestra un mensaje confirmando el ambiente, el nombre de la aplicación y el puerto en el que se está ejecutando.
+
 
 ## Requisitos
 
